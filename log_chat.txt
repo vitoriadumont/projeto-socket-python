@@ -27,3 +27,13 @@ vitoria conectou.
 17:46:58 - vitoria: Olá
 vitoria desconectou.
 Senha incorreta. Conexão encerrada.
+admin conectou.
+admin foi removido pelo admin.
+vitoria conectou.
+11:59:04 - vitoria: Olá. Teste
+12:04:34 - vitoria: import hashlib
+12:04:37 - vitoria: print(hashlib.sha256("dumont123".encode()).hexdigest())
+vitoria desconectou.
+admin conectou.
+18:36:34 - admin: Boa tarde, mensagem de teste!
+admin desconectou.
