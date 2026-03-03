@@ -1,0 +1,29 @@
+vitoria conectou.
+17:08:02 - vitoria: Oie
+vitoria desconectou.
+vitoria conectou.
+17:10:52 - vitoria: Oie
+17:10:57 - vitoria: ok
+vitoria desconectou.
+vitoria conectou.
+17:23:16 - vitoria: Oie, boa tarde
+17:23:31 - vitoria: oie
+17:23:35 - vitoria: boa tarde
+vitoria desconectou.
+vitoria conectou.
+17:26:09 - vitoria: Oie
+17:26:13 - vitoria: Oie
+17:26:15 - vitoria: oi
+vitoria conectou.
+17:28:00 - vitoria: Boa tarde
+vitoria desconectou.
+vitoria conectou.
+17:39:40 - vitoria: Olá
+vitoria desconectou.
+vitoria conectou.
+17:45:44 - vitoria: Ola
+vitoria desconectou.
+vitoria conectou.
+17:46:58 - vitoria: Olá
+vitoria desconectou.
+Senha incorreta. Conexão encerrada.
