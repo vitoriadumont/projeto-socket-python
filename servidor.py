@@ -4,6 +4,11 @@ import hashlib
 import os
 from datetime import datetime
 
+pasta_arquivos = "server_files"
+
+if not os.path.exists(pasta_arquivos):
+    os.makedirs(pasta_arquivos)
+
 
 def gerar_hash(senha):
     return hashlib.sha256(senha.encode()).hexdigest()
@@ -41,6 +46,13 @@ clientes = []
 nomes = []
 admin_nome = "admin"
 
+def listar_arquivos_usuario(nome):
+    pasta_usuario = os.path.join(pasta_arquivos, nome)
+
+    if not os.path.exists(pasta_usuario):
+        return []
+    
+    return os.listdir(pasta_usuario)
 
 def broadcast(mensagem):
     for cliente in clientes:
@@ -52,10 +64,54 @@ def handle_cliente(conn):
         try:
             msg = conn.recv(1024).decode(formato)
 
+            if msg.startswith("upload="):
+
+                dados = msg.split("=")
+                nome_arquivo = dados[1]
+                tamanho = int(dados[2])
+
+                index = clientes.index(conn)
+                nome = nomes[index]
+
+                pasta_usuario = os.path.join(pasta_arquivos, nome)
+                caminho_arquivo = os.path.join(pasta_usuario, nome_arquivo)
+
+                recebido = 0
+
+                with open(caminho_arquivo, "wb") as f:
+
+                    while recebido < tamanho:
+
+                        restante = tamanho - recebido
+                        buffer = 1024 if restante > 1024 else restante
+
+                        dados = conn.recv(buffer)
+
+                        if not dados:
+                            break
+
+                        f.write(dados)
+                        recebido += len(dados)
+
+                registrar_log(f"{nome} enviou arquivo {nome_arquivo}")
+
+                conn.send(f"status= Upload de {nome_arquivo} concluído.".encode(formato))
+
+                continue
+
             if msg.startswith("msg="):
                 mensagem = msg.split("=",1)[1]
                 index = clientes.index(conn)
                 nome = nomes[index]
+
+                if mensagem == "/meus_arquivos":
+                    arquivos = listar_arquivos_usuario(nome)
+                    if not arquivos:
+                        conn.send("status= Você não possui arquivos enviados.".encode(formato))
+                    else:
+                        lista = ", ".join(arquivos)         
+                        conn.send(f"status= Seus arquivos: {lista}".encode(formato))
+                    continue                         
 
                 if mensagem.startswith("/"):
 
@@ -102,6 +158,34 @@ def handle_cliente(conn):
                             conn.send("status= Erro ao ler logs.".encode(formato))
 
                         continue
+
+                    elif mensagem == "/list":
+                        try:
+                            resposta = "Arquivos no servidor: \n"
+
+                            for usuario in os.listdir(pasta_arquivos):
+                                pasta_usuario = os.path.join(pasta_arquivos, nome)
+
+                                if os.path.isdir(pasta_usuario):
+                                    arquivos = os.listdir(pasta_usuario)
+
+                                    resposta += f"\n{usuario}:\n"
+
+                                    if arquivos:
+                                        for arq in arquivos:
+                                            resposta += f"  {arq}\n"
+                                    else:
+                                        resposta += "   (sem arquivos)\n"
+                                        
+                            conn.send(f"status={resposta}".encode(formato))
+                        
+                        except:
+                            conn.send("status= Erro ao acessar arquivos.".encode(formato))
+
+                        continue
+
+                            
+
 
                     else:
                         conn.send("status= Comando inválido.".encode(formato))
@@ -157,6 +241,9 @@ def receber():
                 clientes.append(conn)
                 registrar_log(f"{nome} conectou.")
                 conn.send(f"welcome=Bem-vindo(a), {nome}!".encode(formato))
+                pasta_usuario = os.path.join(pasta_arquivos, nome)
+                if not os.path.exists(pasta_usuario):
+                    os.makedirs(pasta_usuario)
                 thread = threading.Thread(target=handle_cliente, args=(conn,))
                 thread.start()
             else:

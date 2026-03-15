@@ -37,3 +37,25 @@ vitoria desconectou.
 admin conectou.
 18:36:34 - admin: Boa tarde, mensagem de teste!
 admin desconectou.
+bruna conectou.
+21:28:58 - bruna: oi, tudo bem!
+bruna desconectou.
+bruna conectou.
+15:12:01 - bruna: oi
+bruna desconectou.
+admin conectou.
+bruna conectou.
+16:26:54 - bruna: oi
+bruna desconectou.
+admin conectou.
+admin conectou.
+16:46:56 - admin: 
+admin desconectou.
+bruna conectou.
+vitoria conectou.
+vitoria enviou arquivo Teste_Vitoria.txt
+vitoria desconectou.
+Senha incorreta. Conexão encerrada.
+vitoria conectou.
+11:46:07 - vitoria: oie
+vitoria desconectou.

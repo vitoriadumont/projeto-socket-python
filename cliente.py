@@ -1,5 +1,7 @@
 import socket
 import threading
+import os
+import getpass
 from colorama import Fore, Style, init
 from datetime import datetime
 
@@ -50,7 +52,34 @@ def handle_mensagens():
 def enviar_mensagem():
     while True:
         mensagem = input(Fore.YELLOW + "Digite sua mensagem: " + Style.RESET_ALL)
-        enviar("msg=" + mensagem)
+        if mensagem.startswith("/upload "):
+
+            caminho = mensagem.split(" ",1)[1]
+
+            try:
+                nome_arquivo = os.path.basename(caminho)
+                tamanho = os.path.getsize(caminho)
+
+                enviar(f"upload={nome_arquivo}={tamanho}")
+
+                with open(caminho, "rb") as f:
+
+                    while True:
+
+                        dados = f.read(1024)
+
+                        if not dados:
+                            break
+
+                        client.sendall(dados)
+
+                print("Arquivo enviado com sucesso.")
+
+            except:
+                print("Erro ao enviar arquivo.")
+
+        else:
+            enviar("msg=" + mensagem)
 
 def enviar_nome():
     mostrar_login()
@@ -65,7 +94,7 @@ def enviar_nome():
         print(Fore.CYAN + msg.split("=",1)[1] + Style.RESET_ALL)
 
 
-    senha = input(Fore.CYAN + 'Digite sua senha: ' + Style.RESET_ALL)
+    senha = getpass.getpass(Fore.CYAN + 'Digite sua senha: ' + Style.RESET_ALL)
     enviar(f"Senha={senha}")
 
 
