@@ -59,3 +59,31 @@ Senha incorreta. Conexão encerrada.
 vitoria conectou.
 11:46:07 - vitoria: oie
 vitoria desconectou.
+amanda conectou.
+10:10:14 - amanda: oi
+amanda enviou arquivo teste.txt
+amanda baixou arquivo teste.txt
+vitoria conectou.
+10:15:06 - vitoria: oie
+vitoria desconectou.
+amanda conectou.
+10:26:15 - amanda: dir
+amanda enviou arquivo teste.txt.txt
+amanda enviou arquivo teste.txt
+amanda baixou arquivo teste.txt
+amanda desconectou.
+amanda conectou.
+10:37:26 - amanda: oie
+amanda enviou arquivo teste.txt
+amanda baixou arquivo teste.txt
+amanda desconectou.
+amanda conectou.
+vitoria conectou.
+amanda enviou arquivo teste.txt
+amanda enviou arquivo teste.txt
+admin conectou.
+admin enviou arquivo teste.txt
+amanda enviou arquivo teste.txt
+admin desconectou.
+amanda desconectou.
+vitoria desconectou.

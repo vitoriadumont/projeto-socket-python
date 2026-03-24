@@ -1,5 +1,4 @@
-import socket
-import threading
+from ftplib import FTP, error_perm
 import os
 import getpass
 from colorama import Fore, Style, init
@@ -7,115 +6,161 @@ from datetime import datetime
 
 init(autoreset=True)
 
-port = 5050
-servidor = "127.0.0.1"
-addr = (servidor, port)
-formato = 'utf-8'
+os.system('cls' if os.name == 'nt' else 'clear')
 
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-client.connect(addr)
+HOST = "127.0.0.1"
+PORT = 2120
 
+# =========================
+# CONTROLE BIN + HASH
+# =========================
+modo_binario = True
+modo_hash = False
 
-def mostrar_login():
-    print(Fore.CYAN + "\n" + "="*35)
-    print(Fore.CYAN + "        PROJETO SOCKET")
-    print(Fore.CYAN + "="*35)
-    print(Fore.CYAN + "            LOGIN")
-    print(Fore.CYAN + "="*35 + "\n" + Style.RESET_ALL)
+def mostrar_progresso(bloco):
+    if modo_hash:
+        print("#", end="", flush=True)
 
-def enviar(mensagem):
-    client.send(mensagem.encode(formato))
+def mostrar_banner():
+    print(Fore.CYAN + "="*45)
+    print(Fore.CYAN + "               CLIENTE FTP")
+    print(Fore.CYAN + "="*45)
+    print(Fore.LIGHTGREEN_EX + "    Servidor:", HOST, "| " + Fore.LIGHTGREEN_EX + "Porta:", PORT)
+    print(Fore.CYAN + "="*45 + Style.RESET_ALL + "\n")
 
-def handle_mensagens():
-    while True:
+mostrar_banner()
+
+USER = input(Fore.MAGENTA + "Digite o nome de usuário: " + Style.RESET_ALL).strip()
+PASSWORD = getpass.getpass(Fore.MAGENTA + "Digite a senha: " + Style.RESET_ALL)
+
+ftp = FTP()
+
+print(Fore.LIGHTYELLOW_EX + "[i] Conectando ao servidor FTP...\n")
+ftp.connect(HOST, PORT)
+ftp.login(USER, PASSWORD)
+
+print(Fore.LIGHTGREEN_EX + f"[✓] Usuário '{USER}' conectado ao servidor FTP com sucesso!\n")
+print(Fore.LIGHTCYAN_EX + "-> Digite " + Fore.LIGHTBLUE_EX + "help" + Fore.LIGHTCYAN_EX + " para visualizar os comandos disponíveis!\n")
+
+while True:
+    comando = input(Fore.YELLOW + f"{ftp.pwd()} ftp> " + Style.RESET_ALL).strip().lower()
+
+    # LISTAR
+    if comando == "dir":
         try:
-            msg = client.recv(1024).decode()
-            if not msg:
-                continue
+            print(Fore.CYAN + "Listando arquivos no diretório atual:")
+            ftp.retrlines('LIST')
+            print(Fore.CYAN + "Fim da lista de arquivos." + Style.RESET_ALL)
+        except Exception as e:
+            print(Fore.RED + f"[X] Erro ao listar arquivos: {e}")
 
-            if msg.startswith("status="):
-                texto = msg.split("=",1)[1]
-                print(Fore.GREEN + f"[SERVIDOR] {texto}" + Style.RESET_ALL)
-            elif msg.startswith("msg="):
-                partes = msg.split("=")
-                print(f"{Fore.YELLOW}[{partes[3]}]{Style.RESET_ALL} "
-                      f"{Fore.CYAN}{partes[1]}{Style.RESET_ALL}: {partes[2]}")
-            elif msg.startswith("welcome="):
-                texto = msg.split("=",1)[1]
-                print(Fore.CYAN + "\n" + "="*40)
-                print(Fore.CYAN + f"  {texto}")
-                print(Fore.CYAN + "="*40 + "\n" + Style.RESET_ALL)
-        except:
-            print(Fore.RED + "[!] Conexão encerrada pelo servidor." + Style.RESET_ALL)
-            break
-
-def enviar_mensagem():
-    while True:
-        mensagem = input(Fore.YELLOW + "Digite sua mensagem: " + Style.RESET_ALL)
-        if mensagem.startswith("/upload "):
-
-            caminho = mensagem.split(" ",1)[1]
-
-            try:
-                nome_arquivo = os.path.basename(caminho)
-                tamanho = os.path.getsize(caminho)
-
-                enviar(f"upload={nome_arquivo}={tamanho}")
-
-                with open(caminho, "rb") as f:
-
-                    while True:
-
-                        dados = f.read(1024)
-
-                        if not dados:
-                            break
-
-                        client.sendall(dados)
-
-                print("Arquivo enviado com sucesso.")
-
-            except:
-                print("Erro ao enviar arquivo.")
-
+    # CD
+    elif comando.startswith("cd "):
+        pasta = comando[3:].strip()
+        if pasta == USER:
+            print(Fore.YELLOW + "\n[i] Você já está no seu diretório pessoal.")
         else:
-            enviar("msg=" + mensagem)
+            try:
+                ftp.cwd(pasta)
+                print(Fore.GREEN + f"Diretório atual: {ftp.pwd()}")
+            except Exception as e:
+                print(Fore.RED + f"[X] Erro ao mudar de diretório: {e}")
 
-def enviar_nome():
-    mostrar_login()
-    
+    # =========================
+    # GET (COM HASH + ERROR)
+    # =========================
+    elif comando.startswith("get "):
+        arquivo = comando[4:].strip()
+        try:
+            with open(arquivo, 'wb') as f:
+                print(Fore.CYAN + "Baixando arquivo...")
+                ftp.retrbinary(f'RETR {arquivo}', lambda bloco: (f.write(bloco), mostrar_progresso(bloco)))
+            print("\n" + Fore.GREEN + f"Arquivo '{arquivo}' baixado com sucesso!")
+        except error_perm as e:
+            print(Fore.RED + f"[X] Erro de permissão: {e}")
+        except Exception as e:
+            print(Fore.RED + f"[X] Erro ao baixar arquivo: {e}")
 
-    nome = input(Fore.CYAN + 'Digite seu usuário: ' + Style.RESET_ALL)
-    enviar(f"Nome={nome}")
+    # =========================
+    # PUT (COM HASH + ERROR)
+    # =========================
+    elif comando.startswith("put "):
+        arquivo = comando[4:].strip()
+        if os.path.isfile(arquivo):
+            try:
+                with open(arquivo, 'rb') as f:
+                    nome = os.path.basename(arquivo)
+                    print(Fore.CYAN + "Enviando arquivo...")
+                    ftp.storbinary(f'STOR {nome}', f, callback=mostrar_progresso)
+                print("\n" + Fore.GREEN + f"Arquivo '{arquivo}' enviado com sucesso!")
+            except error_perm as e:
+                print(Fore.RED + f"[X] Erro de permissão: {e}")
+            except Exception as e:
+                print(Fore.RED + f"[X] Erro ao enviar arquivo: {e}")
+        else:
+            print(Fore.RED + f"[X] Arquivo '{arquivo}' não encontrado.")
 
+    # =========================
+    # HASH
+    # =========================
+    elif comando == "hash":
+        modo_hash = not modo_hash
+        status = "ativado" if modo_hash else "desativado"
+        print(Fore.GREEN + f"[✓] Modo HASH {status}")
 
-    msg = client.recv(1024).decode()
-    if msg.startswith("auth="):
-        print(Fore.CYAN + msg.split("=",1)[1] + Style.RESET_ALL)
+    # =========================
+    # BIN
+    # =========================
+    elif comando == "bin":
+        modo_binario = True
+        print(Fore.GREEN + "[✓] Modo binário ativado")
 
+    # HELP
+    elif comando == "help":
+        print(Fore.LIGHTCYAN_EX + "\n=============== Comandos disponíveis: ==============\n")
+        print(Fore.MAGENTA + "  dir           -> Listar arquivos no diretório atual")
+        print(Fore.MAGENTA + "  cd pasta      -> Mudar diretório")
+        print(Fore.MAGENTA + "  get arquivo   -> Baixar arquivo")
+        print(Fore.MAGENTA + "  put arquivo   -> Enviar arquivo")
+        print(Fore.MAGENTA + "  hash          -> Mostrar progresso (#)")
+        print(Fore.MAGENTA + "  bin           -> Ativar modo binário")
+        print(Fore.MAGENTA + "  pwd           -> Diretório atual")
+        print(Fore.MAGENTA + "  mkdir pasta   -> Criar diretório")
+        print(Fore.MAGENTA + "  quit          -> Sair")
+        print(Fore.LIGHTCYAN_EX + "\n==================================================" + Style.RESET_ALL)
 
-    senha = getpass.getpass(Fore.CYAN + 'Digite sua senha: ' + Style.RESET_ALL)
-    enviar(f"Senha={senha}")
+    # PWD
+    elif comando == "pwd":
+        try:
+            print(Fore.GREEN + f"Diretório atual: {ftp.pwd()}")
+        except Exception as e:
+            print(Fore.RED + f"[X] Erro: {e}")
 
+    # MKDIR
+    elif comando.startswith("mkdir "):
+        nova_pasta = comando[6:].strip()
+        try:
+            ftp.mkd(nova_pasta)
+            print(Fore.GREEN + f"Diretório '{nova_pasta}' criado com sucesso!")
+        except Exception as e:
+            print(Fore.RED + f"[X] Erro ao criar diretório: {e}")
 
-    msg = client.recv(1024).decode()
-    if msg.startswith("auth="):
-        print(Fore.GREEN + msg.split("=",1)[1] + Style.RESET_ALL)
+    # =========================
+    # QUIT MELHORADO
+    # =========================
+    elif comando == "quit":
+        print(Fore.LIGHTYELLOW_EX + "Desconectando do servidor FTP...")
+        try:
+            ftp.quit()
+        except Exception:
+            ftp.close()
+        print(Fore.CYAN + "Desconectado com sucesso. Até logo!")
+        break
 
+    else:
+        print(Fore.RED + "[X] Comando não reconhecido. Tente novamente.")
 
-    msg = client.recv(1024).decode()
-    if msg.startswith("welcome="):
-        texto = msg.split("=",1)[1]
-        print(Fore.CYAN + "\n" + "="*40)
-        print(Fore.CYAN + f"  {texto}")
-        print(Fore.CYAN + "="*40 + "\n" + Style.RESET_ALL)
+    agora = datetime.now().strftime("%H:%M:%S")
+    print(Fore.BLUE + f"\n[{agora}] Comando executado: {comando}\n" + Style.RESET_ALL)
 
-
-def iniciar():
-    enviar_nome()  
-
-    thread = threading.Thread(target=handle_mensagens, daemon=True)
-    thread.start()
-    enviar_mensagem() 
-
-iniciar()
+    # Fim
