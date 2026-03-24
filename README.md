@@ -1,44 +1,101 @@
-# Projeto Socket - Cliente/Servidor em Python
+Sistema de Transferência de Arquivos com FTP
 
-## Descrição
+Este projeto foi desenvolvido para a disciplina de Redes de Computadores e tem como objetivo implementar um sistema de transferência de arquivos utilizando o protocolo FTP em Python.
 
-Este projeto consiste em uma aplicação cliente-servidor desenvolvida em Python utilizando sockets TCP.
+O sistema permite que usuários se conectem a um servidor FTP, naveguem entre diretórios e realizem transferências de arquivos entre cliente e servidor.
 
-O sistema permite múltiplos usuários conectados simultaneamente, com autenticação por usuário e senha, controle administrativo e registro de logs.
+Tecnologias utilizadas
+Python
+Biblioteca pyftpdlib para criação do servidor FTP
+Biblioteca ftplib para implementação do cliente FTP
+Biblioteca colorama para melhorar a interface no terminal
+Estrutura do projeto
+projeto_ftp
+│
+├── servidor.py
+├── cliente.py
+│
+└── ftp_files
+    ├── vitoria
+    ├── bruna
+    └── amanda
 
-O objetivo do projeto é aplicar conceitos de redes de computadores, concorrência com threads e segurança básica.
+Cada usuário possui um diretório próprio dentro da pasta ftp_files, garantindo organização e isolamento dos arquivos.
 
+Funcionamento do sistema
 
-## Funcionalidades
+O sistema é dividido em duas partes principais:
 
-- Comunicação via TCP
-- Múltiplos clientes simultâneos (threads)
-- Sistema de autenticação com hash (SHA-256)
-- Modo administrador
-- Comandos administrativos:
-  - `/online` → lista usuários conectados
-  - `/kick nome` → remove usuário
-  - `/logs` → exibe últimos registros
-- Registro de logs em arquivo
-- Demonstração de vulnerabilidade via interceptação de tráfego
+Servidor FTP
 
+Responsável por:
 
-## Segurança
+criar e gerenciar usuários
+autenticar conexões
+armazenar arquivos enviados pelos clientes
+controlar permissões de acesso
+registrar conexões no terminal
 
-As senhas não são armazenadas em texto puro.
+O servidor utiliza a biblioteca pyftpdlib para implementar o protocolo FTP.
 
-O sistema utiliza o algoritmo SHA-256 para gerar o hash das senhas antes de armazená-las.
+Cliente FTP
 
-Isso garante proteção no armazenamento das credenciais.
+O cliente foi desenvolvido em Python utilizando a biblioteca ftplib e funciona através de um terminal interativo.
 
-A comunicação não utiliza criptografia TLS, portanto pode ser interceptada.
+O usuário pode:
 
+conectar ao servidor
+navegar entre diretórios
+enviar arquivos
+baixar arquivos
+visualizar arquivos disponíveis no servidor
+Comandos disponíveis no cliente
+Comando	Função
+dir	Lista arquivos do diretório atual
+cd pasta	Navega para um diretório
+get arquivo	Baixa um arquivo do servidor
+put arquivo	Envia um arquivo para o servidor
+pwd	Mostra o diretório atual
+mkdir pasta	Cria um diretório
+help	Mostra os comandos disponíveis
+quit	Encerra a conexão com o servidor
 
-## Tecnologias Utilizadas
+## Como executar o projeto
+1️⃣ Instalar dependências
+pip install pyftpdlib colorama
+2️⃣ Iniciar o servidor
+python servidor.py
 
-- Python 3
-- Socket (TCP)
-- Threading
-- Hashlib (SHA-256)
-- Wireshark (para análise de tráfego)
-- Git e GitHub (versionamento)
+## O servidor iniciará em:
+
+Host: 0.0.0.0
+Porta: 2120
+
+3️⃣ Executar o cliente
+python cliente.py
+Usuários disponíveis
+Usuário	Senha
+vitoria	vitoria123
+bruna	bruna123
+amanda	amanda123
+
+Cada usuário possui uma pasta própria no servidor.
+
+Funcionalidades implementadas
+Servidor FTP utilizando pyftpdlib
+Autenticação de usuários
+Criação automática de diretórios
+Navegação entre pastas
+Upload de arquivos
+Download de arquivos
+Interface de terminal com cores
+Listagem de arquivos no servidor
+Autoras
+
+Projeto desenvolvido por:
+
+Vitória
+Bruna
+Amanda
+
+Disciplina: Redes de Computadores
